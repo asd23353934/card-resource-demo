@@ -59,9 +59,3 @@ func reset_for_new_run() -> void:
 	EventBus.run_started.emit(run_count)
 	EventBus.player_hp_changed.emit(player_hp, max_hp)
 	EventBus.energy_changed.emit(energy, max_energy)
-	player_hp = max_hp
-	energy = max_energy
-	gold = 0
-	current_floor = 1
-	run_count += 1
-	print("[GameState] 開新 run #%d，狀態重置" % run_count)
