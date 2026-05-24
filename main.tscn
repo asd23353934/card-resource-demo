@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://qmyimhma514j"]
+
+[ext_resource type="Script" uid="uid://bdil2ns7yxdyo" path="res://main.gd" id="1_lquwl"]
+[ext_resource type="Script" uid="uid://cs2hkkydofd2t" path="res://cards/card_data.gd" id="2_7mycd"]
+[ext_resource type="Resource" uid="uid://d3yg5yolhujov" path="res://cards/strike.tres" id="3_272bh"]
+[ext_resource type="Resource" uid="uid://uxoxfgdc2dqr" path="res://cards/defend.tres" id="4_5vw27"]
+[ext_resource type="Resource" uid="uid://cfw6te1asj5l" path="res://cards/focus.tres" id="5_kek77"]
+
+[node name="Main" type="Node" unique_id=1687058333]
+script = ExtResource("1_lquwl")
+test_cards = Array[ExtResource("2_7mycd")]([ExtResource("3_272bh"), ExtResource("4_5vw27"), ExtResource("5_kek77")])
