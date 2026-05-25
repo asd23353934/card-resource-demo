@@ -1,5 +1,10 @@
 extends Node
 
+# EventBus pattern：本 autoload 只「宣告」signal 給別的 script emit。
+# 自己永遠不會 emit（這是設計目的，集中所有 signal 在一處便於管理），
+# 所以 unused_signal 警告對這個檔案是誤判，整檔靜音。
+@warning_ignore_start("unused_signal")
+
 # === 戰鬥相關 ===
 signal card_played(card: CardData, target) # 卡牌打出
 signal damage_dealt(amount: int, target_name: String) # 造成傷害

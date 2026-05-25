@@ -84,18 +84,22 @@ card-resource-demo/
 ├── autoload/
 │   ├── game_state.gd     # 全域狀態 + API
 │   └── event_bus.gd      # 全域 signal hub
-├── main.tscn / main.gd   # 驗證場景
+├── test/
+│   ├── test_runner.gd    # 自製測試 harness（9 個測試）
+│   └── test_runner.tscn  # F6 跑這個
+├── main.tscn / main.gd   # 互動驗證場景
 └── project.godot
 ```
 
 ## 執行方式
 
-1. 安裝 [Godot 4.x Standard](https://godotengine.org/download)
+1. 安裝 [Godot 4.x Standard](https://godotengine.org/download)（驗證版本 4.6.3）
 2. clone 此 repo
 3. 開 Godot Project Manager → 匯入 → 選此資料夾的 `project.godot`
-4. F6 跑 `main.tscn`，看 Output 面板
+4. **F6 跑 `main.tscn`**：看 GameState 操作 + EventBus 訂閱者反應
+5. **F6 跑 `test/test_runner.tscn`**：跑 9 個單元測試
 
-預期輸出：
+`main.tscn` 預期輸出：
 ```
 [GameState] autoload ready，HP=80/80 energy=3/3
 [EventBus] autoload ready，11 個 signal 待命
@@ -104,6 +108,67 @@ STRIKE (cost: 1, dmg: 6) — ...
 [GameState] 玩家受 30 點傷害 → [Listener] HP 條更新：50/80
 [GameState] 玩家死亡 → [Listener] !!! 玩家死亡 → 該切 game over scene
 ```
+
+## Tests
+
+### 為什麼自寫不用 framework
+
+原本計畫用 [GdUnit4](https://github.com/godot-gdunit-labs/gdUnit4)，
+但 AssetLib 最新版 v6.0.0 跟 Godot 4.6.3 **API drift**（`FileAccess.get_as_text()`
+參數簽名變了），plugin 載入失敗。GdUnit4 v6.1+ 才支援 4.6，且 AssetLib 還沒同步。
+
+決定 pivot：**寫自己的 test harness**（純 GDScript，無 framework dependency）。
+
+好處：
+- 跨任何 Godot 4.x 版本都能跑（不依賴 plugin 升級）
+- code 透明，每行可控
+- 學到「**怎麼設計 test runner**」而不只是「**怎麼用 framework**」
+
+### 跑測試
+
+```
+F6 → test/test_runner.tscn
+```
+
+預期 Output：
+```
+============================================================
+ GameState test suite (manual harness, no framework)
+============================================================
+  ✓ test_take_damage_normal
+  ✓ test_take_damage_clamps_at_zero
+  ✓ test_take_damage_emits_player_died_signal
+  ✓ test_take_damage_emits_damage_dealt_signal
+  ✓ test_heal_normal
+  ✓ test_heal_clamps_at_max_hp
+  ✓ test_spend_energy_sufficient
+  ✓ test_spend_energy_insufficient
+  ✓ test_reset_increments_run_count_once
+============================================================
+ Result: 9 passed, 0 failed (total 9)
+============================================================
+```
+
+### 覆蓋範圍
+
+| Test | 驗證 |
+|---|---|
+| `test_take_damage_normal` | 基本扣血 |
+| `test_take_damage_clamps_at_zero` | 傷害超過 HP 不會變負 |
+| `test_take_damage_emits_player_died_signal` | HP 歸零會 emit player_died |
+| `test_take_damage_emits_damage_dealt_signal` | 任何傷害會 emit damage_dealt |
+| `test_heal_normal` | 治療數值正確累加 |
+| `test_heal_clamps_at_max_hp` | 治療不會超過 max_hp |
+| `test_spend_energy_sufficient` | 夠的話扣能量回 true |
+| `test_spend_energy_insufficient` | 不夠時能量不變回 false |
+| `test_reset_increments_run_count_once` | **regression test**：防止 [848f6cf](../../commit/848f6cf) 修的 dup-body bug 復發 |
+
+### 加新測試
+
+1. 在 `test/test_runner.gd` 加 `func test_xxx() -> String:`
+2. body 用 `_setup()` 開頭、回傳 `_expect(...)` 或 `_expect_true(...)`
+3. 加 function 名到 `_ready()` 的 `test_names` array
+4. F6 跑
 
 ## License
 
